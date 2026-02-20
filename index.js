@@ -1,7 +1,9 @@
 require("dotenv").config();
 const sqlite3 = require("sqlite3").verbose();
-const { createCanvas } = require("canvas");
+const { createCanvas, registerFont } = require("canvas");
 const { ChartJSNodeCanvas } = require("chartjs-node-canvas");
+
+registerFont("./fonts/Inter-Regular.ttf", { family: "Inter" });
 
 const {
   Client,
@@ -91,7 +93,7 @@ client.on(Events.MessageCreate, async (message) => {
   }
 });
 
-/* ================= DASHBOARD BUILDER ================= */
+/* ================= DASHBOARD ================= */
 
 function drawCard(ctx, x, y, w, h, borderColor) {
   ctx.fillStyle = "#0f172a";
@@ -152,22 +154,20 @@ function generateDashboard(rows) {
   ctx.fillRect(0, 0, 1200, 750);
 
   ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 40px Arial";
+  ctx.font = "bold 40px Inter";
   ctx.fillText("TRADING PERFORMANCE DASHBOARD", 250, 70);
-
-  /* TOP ROW */
 
   drawCard(ctx, 100, 130, 300, 180, "#ffffff");
   drawCard(ctx, 450, 130, 300, 180, "#22d3ee");
   drawCard(ctx, 800, 130, 300, 180, rrColor);
 
-  ctx.font = "bold 20px Arial";
+  ctx.font = "bold 20px Inter";
   ctx.fillStyle = "#94a3b8";
   ctx.fillText("TOTAL TRADES", 180, 170);
   ctx.fillText("WIN RATE", 540, 170);
   ctx.fillText("TOTAL RR", 900, 170);
 
-  ctx.font = "bold 42px Arial";
+  ctx.font = "bold 42px Inter";
   ctx.fillStyle = "#ffffff";
   ctx.fillText(total, 220, 240);
 
@@ -177,17 +177,15 @@ function generateDashboard(rows) {
   ctx.fillStyle = rrColor;
   ctx.fillText(`${totalRR.toFixed(2)} RR`, 860, 240);
 
-  /* MIDDLE ROW */
-
   drawCard(ctx, 100, 350, 450, 200, "#ffffff");
   drawCard(ctx, 650, 350, 450, 200, streakColor);
 
-  ctx.font = "bold 22px Arial";
+  ctx.font = "bold 22px Inter";
   ctx.fillStyle = "#94a3b8";
   ctx.fillText("AVERAGE PERFORMANCE", 200, 390);
   ctx.fillText("RECORD STREAKS", 780, 390);
 
-  ctx.font = "28px Arial";
+  ctx.font = "28px Inter";
   ctx.fillStyle = "#22c55e";
   ctx.fillText(`Avg Win: ${avgWin} RR`, 200, 440);
 
@@ -198,11 +196,9 @@ function generateDashboard(rows) {
   ctx.fillText(`Highest Win: ${highestWin}`, 780, 440);
   ctx.fillText(`Highest Loss: ${highestLoss}`, 780, 490);
 
-  /* BOTTOM MOMENTUM BOX */
-
   drawCard(ctx, 300, 600, 600, 120, streakColor);
 
-  ctx.font = "bold 30px Arial";
+  ctx.font = "bold 30px Inter";
   ctx.fillStyle = streakColor;
 
   ctx.fillText(
@@ -222,7 +218,6 @@ function generateDashboard(rows) {
 
 client.on(Events.InteractionCreate, async (interaction) => {
 
-  /* DROPDOWN */
   if (interaction.isStringSelectMenu()) {
 
     const ownerId = interaction.customId.split("_")[1];
@@ -257,7 +252,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
     return interaction.update({ content:"Trade saved.", components:[] });
   }
 
-  /* MODAL */
   if (interaction.isModalSubmit()) {
 
     const parts = interaction.customId.split("_");
@@ -281,7 +275,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   if (!interaction.isChatInputCommand()) return;
 
-  /* REMOVE */
   if (interaction.commandName === "remove") {
 
     const count = interaction.options.getInteger("count") || 1;
@@ -299,7 +292,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
     });
   }
 
-  /* STATS */
   if (interaction.commandName === "stats") {
 
     db.all(`SELECT * FROM trades WHERE userId=? ORDER BY id ASC`,
@@ -315,7 +307,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
   }
 
-  /* EQUITY */
   if (interaction.commandName === "equitycurve") {
 
     db.all(`SELECT rr FROM trades WHERE userId=? ORDER BY id ASC`,
